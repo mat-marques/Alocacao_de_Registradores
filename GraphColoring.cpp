@@ -7,6 +7,10 @@ GraphColoring::GraphColoring(vector<string> graph_input) {
     this->ReadInput(graph_input, n);
 }
 
+/*
+* Função que realiza o split de um string input por um delimitador delimiter.
+* A saida é retornada em um vetor de strings.
+*/
 vector<string> GraphColoring::SplitString(string input, string delimiter) {
 	vector<string> l;
     size_t pos = 0;
@@ -20,6 +24,11 @@ vector<string> GraphColoring::SplitString(string input, string delimiter) {
 	return l;
 }
 
+/*
+* Leitura da entrada para a configuração do grafo. A entrada está
+* em graph_input e n é o tamanho de grapf_input. O grafo é posta
+* na variável this->g da classe.
+*/
 bool GraphColoring::ReadInput(vector<string> graph_input, int n){
     vector<string> split_row;
     //Leitura do nome do grafo
@@ -47,12 +56,15 @@ bool GraphColoring::ReadInput(vector<string> graph_input, int n){
     return true;
 }
 
+/*
+* Realiza o Potencial Spill do processo de alocação de registradores.
+*/
 void GraphColoring::PotencialSpill(){
     int a, degreePosition = 0, degree;
 
     degree = this->g->ChildrenSize(0);
     degreePosition = 0;
-
+    //Procura o menor grau
     for(int i = 0; i < this->g->graph.size(); i++) {
         a = this->g->ChildrenSize(i);
         if(a > degree) {
@@ -73,6 +85,9 @@ void GraphColoring::PotencialSpill(){
     this->g->graph.erase(this->g->graph.begin() + degreePosition);
 }
 
+/*
+* Realiza o Simplify do processo de alocação de registradores.
+*/
 void GraphColoring::Simplify(){
     int a, degreePosition, degree;
     while(this->g->graph.size() > 0) {
@@ -81,7 +96,7 @@ void GraphColoring::Simplify(){
 
         if(degree < this->K) degreePosition = 0;
         else degreePosition = -1;
-
+        //Procura o menor grau
         for(int i = 0; i < this->g->graph.size(); i++) {
             a = this->g->ChildrenSize(i);
             if(a < this->K){
@@ -110,6 +125,10 @@ void GraphColoring::Simplify(){
     }
 }
 
+/*
+* Função disponível ao usuário para a realização do processo total da alocação de registradores
+* utilizando coloração de grafos.
+*/
 void GraphColoring::Coloring(){
 
     int k = this->K, a, b, space = 1;
@@ -118,6 +137,7 @@ void GraphColoring::Coloring(){
     cout << "Graph " << this->graph_name << " -> Physical Registers: " << this->K << endl;
     cout << "----------------------------------------" << endl;
 
+    //Realiza o processo de alocação até K = 2
     while(this->K >= 2){
         cout << "----------------------------------------" << endl;
         cout << "K = " << this->K << endl;
@@ -136,6 +156,7 @@ void GraphColoring::Coloring(){
     for(int i = 0; i < results.size(); i++) {
         cout << endl;
 
+        //Controle da quantidade de espaços para se printar na tela
         intToString = std::to_string(k - i);
         b = intToString.size();
         if(b < a) {
@@ -158,22 +179,27 @@ void GraphColoring::Coloring(){
             cout << (k - i) << ": SPILL";
         }
     }
-
+    delete this->g;
 }
 
+/*
+* Retorna a menor cor para um determinado nó do grafo.
+*/
 int GraphColoring::SmallVA(GraphNode node) {
     int color;
     vector<int> colors;
+    //Seta as cores com disponíveis
     for(int i = 0; i < this->K; i++){
         colors.push_back(1);
     }
 
+    //Seta as cores que não estão disponíveis para coloração
     for(int i = 0; i < node.childrens.size(); i++) {
         // cout << node.childrens[i].value << " " << this->K << endl;
-        if(node.childrens[i].value < this->K) {
+        if(node.childrens[i].value < this->K) { //Registrador físico
             colors[node.childrens[i].value] = 0;
         }
-        else {
+        else { //Registrador virtual
             color = this->g->FindColorByFather(node.childrens[i].value);
             if(color != -1 ) {
                 colors[color] = 0;
@@ -184,7 +210,7 @@ int GraphColoring::SmallVA(GraphNode node) {
     // for(int i = 0; i < this->K; i++)
     //     cout << colors[i] << " ";
     // cout << endl;
-
+    //Retorna a menor cor disponível
     for(int i = 0; i < this->K; i++){
         if(colors[i]) {
             return i;
@@ -194,6 +220,11 @@ int GraphColoring::SmallVA(GraphNode node) {
     return -1;
 }
 
+/*
+* Realiza o Assign do processo de alocação de registradores.
+* Retorna true se o processo de coloração ocorreu com sucesso
+* e falso caso contrário.
+*/
 bool GraphColoring::Assign(){
     GraphNode node;
     int color = -1;
@@ -201,11 +232,11 @@ bool GraphColoring::Assign(){
         node = this->s.top();
         this->s.pop();
         color = this->SmallVA(node);
-        if(color != -1){
+        if(color != -1){ //Cor disponível
             node.color = color;
             cout << "Pop: " << node.father << " -> " << color <<endl;
         }
-         else {
+         else { //Cor indisponível
             cout << "Pop: " << node.father << " -> NO COLOR AVAILABLE" <<endl;
             this->g->InsertNode(node);
             //Reinsere no grafo

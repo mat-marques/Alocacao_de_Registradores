@@ -18,5 +18,5 @@ int main(int argc, char* argv[]) {
     
     gc = new GraphColoring(graph_input);
     gc->Coloring();
-
+    delete gc;
 }

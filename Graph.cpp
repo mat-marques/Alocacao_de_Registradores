@@ -4,6 +4,10 @@ Graph::Graph(int rows){
     graph.resize(rows);
 };
 
+/*
+* Insere o id do nó, no qual father é o valor e row é a 
+* posição que se inserirá na matrix
+*/
 bool Graph::InsertFather(int row, int father) {
     if(row >= 0 && row < this->graph.size()){
         this->graph[row].color = -1;
@@ -13,6 +17,10 @@ bool Graph::InsertFather(int row, int father) {
     return false;
 };
 
+/*
+* Insere uma aresta em um determinado nó, no qual children 
+* é o valor e row é a posição que se inserirá na matrix
+*/
 bool Graph::InsertChildren(int row, int children) {
     GraphNodeChild c;
     c.value = children;
@@ -24,6 +32,10 @@ bool Graph::InsertChildren(int row, int children) {
     return false;
 };
 
+/*
+* Retorna a aresta de um nó, no qual row é a posição do nó e
+* col é a posição da aresta na matrix
+*/
 int Graph::Get(int row, int col) {
     if(row >= 0 && row < this->graph.size()){
         if(col >= 0 && col < this->graph[row].childrens.size()) {
@@ -32,6 +44,11 @@ int Graph::Get(int row, int col) {
     }
 };
 
+
+/*
+* Remove uma aresta de um nó do grafo, no qual o nó da aresta removida será o valor
+* representado por father. A remoção seta como false o valor active de uma aresta.
+*/
 void Graph::RemoveChildren(int father){
     for(int i = 0; i < this->graph.size(); i++) {
         for(int j = 0; j < this->graph[i].childrens.size(); j++) {
@@ -42,6 +59,9 @@ void Graph::RemoveChildren(int father){
     }
 }
 
+/*
+* Retorna o grau de um nó.
+*/
 int Graph::ChildrenSize(int row) {
     int size = 0;
     for(int i = 0; i < this->graph[row].childrens.size(); i++) {
@@ -52,6 +72,9 @@ int Graph::ChildrenSize(int row) {
     return size;
 }
 
+/*
+* Ativa todas as arestas dos nós do grafo que foram definidas como removidas.
+*/
 void Graph::ActiveAllChildren(){
     for(int i = 0; i < this->graph.size(); i++) {
         this->graph[i].color = -1;
@@ -61,10 +84,18 @@ void Graph::ActiveAllChildren(){
     }
 }
 
+/*
+* Insere um nó no grafo. O nó é representado por node.
+*/
 void Graph::InsertNode(GraphNode node){
     this->graph.push_back(node);
 }
 
+/*
+* Procura a cor de um nó no grafo, a procura buscará o nó com
+* o valor representado por father. Se encontrar retorna o valor
+* caso contrario retorna -1.
+*/
 int Graph::FindColorByFather(int father){
     for(int i = 0; i < this->graph.size(); i++) {
         if(this->graph[i].father == father) {
@@ -74,6 +105,9 @@ int Graph::FindColorByFather(int father){
     return -1;
 }
 
+/*
+* Printa o grafo na saída padrão.
+*/
 void Graph::PrintGraph() {
     for(int i = 0; i < this->graph.size(); i++) {
         cout << this->graph[i].father << " --> ";
